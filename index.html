@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yiyi's World</title>
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/512/kawaii-cat.png">
+    <style>
+        :root { 
+            --bg-color: #FFF9EB; --primary: #F6AE2D; --text-main: #5C4A3D; --text-sub: #9A8B80; 
+            --card-bg: #FFFFFF; --tag-bg: #FFEFEF; --tag-text: #E86A58; --shadow: 0 6px 16px rgba(200, 180, 150, 0.15);
+            --period-pink: #FFE4E1; --period-deep: #FF6B6B; --class-blue: #E8F1FF; --class-text: #4A90E2;
+            --fun-purple: #F3E8FF; --fun-text: #9B59B6;
+            --money-green: #E8F8F5; --money-text: #1ABC9C;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; }
+        
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+
+        .header { padding: 25px 20px 15px; background: linear-gradient(180deg, #FFF2D4 0%, #FFF9EB 100%); border-radius: 0 0 30px 30px; }
+        .header-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .date-badge { font-size: 14px; background: #FFFFFF; padding: 4px 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); color: var(--primary); font-weight: bold;}
+        .quote { font-size: 13px; color: var(--text-sub); line-height: 1.5; background: rgba(255,255,255,0.6); padding: 8px 12px; border-radius: 12px; margin-top: 10px; display: inline-block; border: 1px dashed #E8DCC8;}
+
+        .class-card { margin: 15px 20px 0; background: var(--class-blue); border-radius: 16px; padding: 12px 15px; border-left: 5px solid var(--class-text); }
+        .class-title { font-size: 14px; font-weight: bold; color: var(--class-text); margin-bottom: 6px; display: flex; align-items: center; }
+        .class-desc { font-size: 13px; color: #333; line-height: 1.6; }
+
+        /* 生理期卡片 */
+        .health-card { margin: 10px 20px 0; background: var(--period-pink); border-radius: 16px; padding: 12px 15px; border: 2px solid #FFD1CC; display: flex; flex-direction: column;}
+        .health-top { display: flex; justify-content: space-between; align-items: center; }
+        .health-text { display: flex; flex-direction: column; }
+        .health-title { font-size: 14px; font-weight: bold; color: #D35400; }
+        .health-desc { font-size: 12px; color: #C0392B; }
+        .health-btn { background: white; color: var(--period-deep); border: none; padding: 6px 10px; border-radius: 10px; font-size: 12px; font-weight: bold; }
+        
+        /* 日历选择输入框 */
+        .date-input-group { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #FFD1CC; gap: 10px; align-items: center;}
+        .date-input-group.active { display: flex; }
+        .date-input-group input[type="date"] { flex: 1; padding: 6px; border: 1px solid #ddd; border-radius: 8px; font-size: 12px; color: #333;}
+
+        .section-title { padding: 15px 20px 10px; font-size: 15px; font-weight: bold; color: var(--text-main); display: flex; align-items: center;}
+        .section-title span { margin-right: 6px; font-size: 18px;}
+        
+        .task-list { padding: 0 20px; }
+        .task-card { background: var(--card-bg); border-radius: 20px; padding: 16px; margin-bottom: 12px; box-shadow: var(--shadow); transition: all 0.2s ease; border: 2px solid transparent; position: relative; }
+        .task-card:active { transform: scale(0.97); }
+        .task-card.done { opacity: 0.6; background: #F7F3EA; border: 2px dashed #E0D6C8; box-shadow: none; }
+        .task-card.done .task-title { text-decoration: line-through; color: var(--text-sub); }
+        .task-card.fun { background: var(--fun-purple); border-color: #E8DAEF; }
+        .task-card.fun .min-tag { background: #FFFFFF; color: var(--fun-text); }
+
+        .task-flow { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; display: flex; justify-content: space-between;}
+        .countdown { color: #E86A58; font-weight: bold; }
+        .task-title { font-size: 17px; font-weight: bold; margin-bottom: 10px; line-height: 1.4; }
+        .task-bottom { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .min-tag { background: var(--tag-bg); color: var(--tag-text); padding: 4px 10px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block;}
+        
+        /* 底部导航 */
+        .nav-bar { position: fixed; bottom: 10px; left: 10px; right: 10px; background: #FFFFFF; display: flex; border-radius: 30px; padding: 12px 0; box-shadow: 0 8px 24px rgba(180, 160, 140, 0.3); z-index: 10; }
+        .nav-item { flex: 1; text-align: center; color: #C4B8AC; font-size: 12px; font-weight: bold; display: flex; flex-direction: column; align-items: center; cursor: pointer;}
+        .nav-item span { font-size: 20px; margin-bottom: 2px; opacity: 0.5; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active span { opacity: 1; }
+        
+        .btn-add { position: fixed; bottom: 90px; right: 20px; width: 56px; height: 56px; background: var(--primary); color: white; border: none; border-radius: 50%; font-size: 28px; display: flex; justify-content: center; align-items: center; box-shadow: 0 6px 16px rgba(246, 174, 45, 0.4); z-index: 10; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(92, 74, 61, 0.4); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(2px); }
+        .modal-content { background: #FFFFFF; padding: 25px 20px; border-radius: 24px; width: 85%; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .modal-content h3 { margin-bottom: 15px; color: var(--text-main); font-size: 18px; text-align: center; }
+        .input-group { display: flex; gap: 5px; margin-bottom: 12px; }
+        .modal-content input, .modal-content select { width: 100%; padding: 12px 15px; border: 2px solid #F0E6D8; border-radius: 12px; font-size: 14px; outline: none; background: white;}
+        .mic-btn { background: #FFEFEF; border: 2px solid #FFD1CC; border-radius: 12px; width: 50px; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; }
+        .mic-btn.recording { background: #FF6B6B; color: white; animation: pulse 1s infinite; }
+        .modal-btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btn-group button { flex: 1; padding: 12px; border: none; border-radius: 12px; font-weight: bold; font-size: 15px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-cancel { background: #F0E6D8; color: var(--text-main); }
+
+        .cute-alert { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 249, 235, 0.85); z-index: 999; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .cute-alert-box { background: #FFFFFF; width: 80%; padding: 30px 20px; border-radius: 30px; box-shadow: 0 15px 40px rgba(246, 174, 45, 0.3); text-align: center; border: 3px dashed var(--primary); animation: bounceIn 0.5s; }
+        .cute-icon { font-size: 60px; margin-bottom: 15px; display: inline-block; animation: float 2s infinite ease-in-out; }
+        .cute-alert-title { font-size: 20px; font-weight: 900; color: var(--primary); margin-bottom: 12px; }
+        .cute-alert-task { font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 10px; background: var(--tag-bg); padding: 10px; border-radius: 12px; }
+        .cute-alert-min { font-size: 14px; color: var(--text-sub); margin-bottom: 25px; }
+        .cute-btn { background: var(--primary); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 16px; font-weight: bold; box-shadow: 0 6px 15px rgba(246, 174, 45, 0.4); width: 100%; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes bounceIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+
+        .report-card { margin: 20px; background: white; padding: 25px 20px; border-radius: 20px; box-shadow: var(--shadow); text-align: center; }
+        .report-circle { width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--primary) 0%, var(--primary) var(--percent), #F0E6D8 var(--percent), #F0E6D8 100%); margin: 0 auto 20px; display: flex; justify-content: center; align-items: center; }
+        .report-inner { width: 100px; height: 100px; background: white; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; }
+        .report-score { font-size: 28px; color: var(--primary); }
+        .report-label { font-size: 12px; color: var(--text-sub); }
+        .coach-tip { background: #FFF9EB; padding: 15px; border-radius: 12px; font-size: 14px; color: var(--text-main); line-height: 1.6; text-align: left; border-left: 4px solid var(--primary); margin-top: 20px; }
+
+        .wallet-card { margin: 15px 20px; background: white; padding: 20px; border-radius: 20px; box-shadow: var(--shadow); }
+        .wallet-total { font-size: 32px; font-weight: bold; color: var(--money-text); margin: 10px 0; }
+        .budget-item { margin-bottom: 15px; }
+        .budget-label { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; font-weight: bold; }
+        .progress-bg { height: 10px; background: #F0F6F5; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 5px; transition: width 0.3s; }
+        .expense-list { margin-top: 15px; border-top: 1px dashed #eee; padding-top: 15px; max-height: 200px; overflow-y: auto;}
+        .expense-item { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px solid #f9f9f9; color: var(--text-sub); }
+        
+        .sync-btn { background: #FF3B30; color: white; width: 80%; padding: 15px; border-radius: 25px; border: none; font-size: 16px; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 6px 15px rgba(255, 59, 48, 0.3); }
+    </style>
+</head>
+<body>
+
+    <!-- 今日页面 -->
+    <div class="page active" id="page-today">
+        <div class="header">
+            <div class="header-title">
+                <span>✨ Yiyi's World</span>
+                <span class="date-badge" id="date-text">10月23日</span>
+            </div>
+            <div class="quote" id="quote-text">进门不要坐，背包放下就去洗澡。</div>
+        </div>
+
+        <div class="class-card">
+            <div class="class-title">📚 今日课程概览</div>
+            <div class="class-desc" id="class-desc">加载中...</div>
+        </div>
+
+        <!-- 升级后的生理期助手 -->
+        <div class="health-card" id="period-card">
+            <div class="health-top">
+                <div class="health-text">
+                    <div class="health-title">🌸 生理期小助手</div>
+                    <div class="health-desc" id="period-desc">正在计算...</div>
+                </div>
+                <button class="health-btn" onclick="togglePeriodInput()">设置日期</button>
+            </div>
+            <div class="date-input-group" id="date-input-group">
+                <div style="font-size:12px; color:#C0392B;">开始:</div>
+                <input type="date" id="period-start">
+                <div style="font-size:12px; color:#C0392B;">结束:</div>
+                <input type="date" id="period-end">
+                <button onclick="savePeriodDates()" style="background:var(--period-deep); color:white; border:none; border-radius:8px; padding:6px 10px; font-size:12px;">保存</button>
+            </div>
+        </div>
+
+        <div class="section-title"><span>✅</span>及格线（每天三件事）</div>
+        <div class="task-list" id="daily-must-list"></div>
+
+        <div class="section-title"><span>🎯</span>今日主业（按课表排布）</div>
+        <div class="task-list" id="daily-main-list"></div>
+
+        <div class="section-title"><span>🎉</span>理直气壮的休闲</div>
+        <div class="task-list" id="daily-fun-list"></div>
+
+        <div class="section-title"><span>🌟</span>加分项 & 特殊任务</div>
+        <div class="task-list" id="daily-bonus-list"></div>
+    </div>
+
+    <!-- 周报页面 -->
+    <div class="page" id="page-report">
+        <div class="header">
+            <div class="header-title"><span>📊 本周数据</span></div>
+            <div class="quote">计划不是用来完成的，是用来失败之后重新开始的。</div>
+        </div>
+        <div class="report-card">
+            <div class="report-circle" id="report-ring" style="--percent: 0%;">
+                <div class="report-inner">
+                    <span class="report-score" id="report-score-text">0%</span>
+                    <span class="report-label">完成率</span>
+                </div>
+            </div>
+            <h3 style="color:var(--text-main); margin-bottom:10px;">Yiyi，这周辛苦啦！</h3>
+            <p style="font-size:14px; color:var(--text-sub);">你一共完成了 <strong id="report-done-num" style="color:var(--primary); font-size:18px;">0</strong> 个小目标。</p>
+            <div class="coach-tip" id="coach-tip">正在分析你的打卡数据...</div>
+        </div>
+    </div>
+
+    <!-- 钱包页面 -->
+    <div class="page" id="page-wallet">
+        <div class="header">
+            <div class="header-title"><span>💰 我的小金库</span></div>
+            <div class="quote">先存后花，只管弹性支出。哪怕每月只存一百，也是底气。</div>
+        </div>
+        
+        <div id="wallet-setup" class="wallet-card" style="text-align: center; display: none;">
+            <h3>这个月发生活费了吗？</h3>
+            <p style="font-size: 13px; color: var(--text-sub); margin: 10px 0;">输入总金额，管家帮你分好（储蓄15%，饭钱65%，日用23%，娱乐12%）</p>
+            <input type="number" id="incomeInput" placeholder="输入金额 (元)" style="width: 80%; padding: 10px; border: 2px solid #F0E6D8; border-radius: 10px; margin-bottom: 15px; outline: none; text-align: center;">
+            <button class="btn-save" onclick="distributeBudget()" style="padding: 10px 30px; border-radius: 20px; border: none; color: white; background: var(--money-text); font-weight: bold;">一键分配</button>
+        </div>
+
+        <div id="wallet-main" style="display: none;">
+            <div class="wallet-card">
+                <div style="font-size: 14px; color: var(--text-sub);">本月可花总额 (不含储蓄)</div>
+                <div class="wallet-total" id="total-display">¥ 0</div>
+                <div style="font-size: 12px; color: var(--money-text); background: var(--money-green); padding: 5px 10px; border-radius: 8px; display: inline-block;">已偷偷存下：<span id="saved-display">¥0</span> 🎉</div>
+                
+                <div style="margin-top: 20px;">
+                    <div class="budget-item">
+                        <div class="budget-label"><span>🍚 饭钱 (固定)</span> <span id="food-text">0 / 0</span></div>
+                        <div class="progress-bg"><div class="progress-fill" id="food-bar" style="background:#F6AE2D; width: 0%;"></div></div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-label"><span>🧴 日用/交通</span> <span id="daily-text">0 / 0</span></div>
+                        <div class="progress-bg"><div class="progress-fill" id="daily-bar" style="background:#4A90E2; width: 0%;"></div></div>
+                    </div>
+                    <div class="budget-item">
+                        <div class="budget-label"><span>🧋 娱乐额度</span> <span id="fun-text">0 / 0</span></div>
+                        <div class="progress-bg"><div class="progress-fill" id="fun-bar" style="background:#E86A58; width: 0%;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="wallet-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="font-size:16px;">一键记一笔</h3>
+                    <button onclick="resetWallet()" style="background:none; border:none; color:#ccc; font-size:12px;">重置本月</button>
+                </div>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="number" id="expenseAmount" placeholder="花了多少" style="flex:1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline:none;">
+                    <select id="expenseCategory" style="flex:1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline:none;">
+                        <option value="food">🍚 饭钱(聚餐)</option>
+                        <option value="daily">🧴 日用/交通</option>
+                        <option value="fun">🧋 娱乐/衣服</option>
+                    </select>
+                    <button onclick="addExpense()" style="background: var(--money-text); color: white; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold;">记</button>
+                </div>
+                <div class="expense-list" id="expense-list"></div>
+                <div style="font-size:12px; color:#999; text-align:center; margin-top:15px;">提示：想自动识别账单，请截图发给你的 AI 管家（在聊天框里），她会帮你算好并填入。</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 日历同步页面 -->
+    <div class="page" id="page-sync">
+        <div class="header">
+            <div class="header-title"><span>📅 系统提醒</span></div>
+            <div class="quote">因为苹果限制，网页无法后台震动。导进自带日历，就能准时震动啦！</div>
+        </div>
+        <div class="wallet-card" style="text-align: center;">
+            <div style="font-size: 50px; margin: 20px 0;">📲</div>
+            <h3 style="margin-bottom: 10px; color: var(--text-main);">导入到 iPhone 日历</h3>
+            <p style="font-size: 13px; color: var(--text-sub); line-height: 1.6; margin-bottom: 20px; text-align: left;">
+                点击下方按钮下载日程文件，用“日历”App 打开，到了设定的时间（如21:20），即使手机静音锁屏，也会强制震动提醒你！
+            </p>
+            <button class="sync-btn" onclick="exportCalendar()">一键生成并下载</button>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="nav-bar">
+        <div class="nav-item active" id="nav-today" onclick="switchPage('today')"><span>📖</span>今日</div>
+        <div class="nav-item" id="nav-report" onclick="switchPage('report')"><span>📊</span>周报</div>
+        <div class="nav-item" id="nav-wallet" onclick="switchPage('wallet')"><span>💰</span>钱包</div>
+        <div class="nav-item" id="nav-sync" onclick="switchPage('sync')"><span>📅</span>同步</div>
+    </div>
+
+    <button class="btn-add" onclick="openModal()">✏️</button>
+
+    <!-- 弹窗：添加加分项（支持语音） -->
+    <div class="modal" id="taskModal">
+        <div class="modal-content">
+            <h3>添加任务 ✨</h3>
+            <div class="input-group">
+                <input type="text" id="newTaskTitle" placeholder="任务名 (点右侧麦克风说话)">
+                <button class="mic-btn" id="micBtn" onclick="startVoiceInput()">🎤</button>
+            </div>
+            <input type="text" id="newTaskMin" placeholder="最低底线 (如: 听10分钟)">
+            <div class="modal-btn-group">
+                <button class="btn-cancel" onclick="closeModal()">取消</button>
+                <button class="btn-save" onclick="saveNewTask()">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="cute-alert" id="cuteAlert">
+        <div class="cute-alert-box">
+            <div class="cute-icon">🐱</div>
+            <div class="cute-alert-title">叮咚！时间到啦~</div>
+            <div class="cute-alert-task" id="cuteTaskName">去洗澡</div>
+            <div class="cute-alert-min" id="cuteTaskMin">底线：至少站起来</div>
+            <button class="cute-btn" onclick="closeCuteAlert()">我知道啦，马上去做！</button>
+        </div>
+    </div>
+
+    <script>
+        // 页面切换
+        function switchPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + pageName).classList.add('active');
+            document.getElementById('nav-' + pageName).classList.add('active');
+
+            if (pageName === 'report') generateReport();
+            if (pageName === 'wallet') renderWallet();
+        }
+
+        // 课表数据
+        const getTodayPlan = () => {
+            const day = new Date().getDay();
+            const plans = {
+                1: { classInfo: "上午：基础化学/武术<br>晚上：文献导读", flow: "20:25 下课 → 洗澡 → 学 30 分钟", main: "化学 1-2 题", min: "1 题", targetTime: "21:20", fun: "睡前听点轻音乐" },
+                2: { classInfo: "上午：形态学实验 | 下午：大学英语<br>晚自习", flow: "晚自习做解剖，回寝只洗澡", main: "解剖回忆", min: "说 2 分钟", targetTime: "20:30", fun: "回寝路上看看月亮" },
+                3: { classInfo: "上午：基础化学 | 晚上：人工智能", flow: "20:25 下课 → 跑步 → 洗澡 → 学习", main: "化学 1-2 题", min: "1 题", targetTime: "21:30", fun: "跑完步奖励一杯热饮" },
+                4: { classInfo: "全天形态学 | 晚上：新中国史", flow: "20:25 下课 → 洗澡 → 学 30 分钟", main: "期中作业提纲", min: "写 100 字", targetTime: "21:20", fun: "睡前拉伸" },
+                5: { classInfo: "下午：形态学实验<br>晚上完全空出来！", flow: "晚上空出来", main: "愿望：文游或 vlog", min: "30 分钟", targetTime: "20:00", fun: "理直气壮地玩！" },
+                6: { classInfo: "周末双休", flow: "白天两小时愿望", main: "补漏 / 休息", min: "休息也算完成", targetTime: "10:00", fun: "看一部电影" },
+                0: { classInfo: "晚自习", flow: "晚自习里做解剖", main: "解剖回忆", min: "说 2 分钟", targetTime: "20:30", fun: "和室友聊聊天" }
+            };
+            return plans[day] || plans[1];
+        };
+
+        const quotes = ["进门别坐下，先去洗澡！", "断一天不算断，从最小版重新开始。", "每天只定一件必做的事。", "23:30 躺下，决定了明天一半的气色。", "能重新开始的人，走得更远。"];
+
+        let tasks = JSON.parse(localStorage.getItem('wuyiSchedule')) || {
+            must: [
+                { id: 'm1', flow: "关机仪式", title: "23:30 躺下，手机放桌上", min: "不看手机", time: "23:30", target: "23:30", done: false },
+                { id: 'm2', flow: "体态纠正", title: "体态 3 分钟", min: "靠墙站 1 分钟", time: "睡前", target: "23:20", done: false }
+            ],
+            main: [], fun: [],
+            bonus: [
+                { id: 'b1', flow: "10.25体测倒计时", title: "坐位体前屈练习", min: "拉伸 3组×3轮", time: "近期", target: "20:00", done: false },
+                { id: 'b2', flow: "气色加分", title: "午饭/晚饭加一份蛋白质", min: "吃块豆腐/鸡肉", time: "吃饭时", target: "12:00", done: false }
+            ],
+            history: JSON.parse(localStorage.getItem('wuyiHistory')) || []
+        };
+
+        function init() {
+            const plan = getTodayPlan();
+            const today = new Date();
+            document.getElementById('date-text').innerText = `${today.getMonth()+1}月${today.getDate()}日`;
+            document.getElementById('quote-text').innerText = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('class-desc').innerHTML = plan.classInfo;
+
+            const todayStr = today.toDateString();
+            const lastOpenDate = localStorage.getItem('lastOpenDate');
+            
+            if (tasks.main.length === 0 || lastOpenDate !== todayStr) {
+                tasks.main = [{ id: 'main1', flow: plan.flow, title: plan.main, min: plan.min, time: "晚上", target: plan.targetTime, done: false }];
+                tasks.fun = [{ id: 'fun1', flow: "休闲时间", title: plan.fun, min: "理直气壮地放松", time: "随时", target: "", done: false }];
+                
+                if (lastOpenDate && lastOpenDate !== todayStr) {
+                    tasks.must.forEach(t => t.done = false); 
+                    let yDone = 0, yTotal = 0;
+                    ['must', 'main', 'fun', 'bonus'].forEach(k => {
+                        yTotal += tasks[k].length;
+                        yDone += tasks[k].filter(t => t.done).length;
+                    });
+                    tasks.history.push({ date: lastOpenDate, done: yDone, total: yTotal });
+                }
+                localStorage.setItem('lastOpenDate', todayStr);
+                saveData();
+            }
+            updatePeriodStatus(); renderAll(); startClock(); 
+        }
+
+        function renderAll() {
+            renderList('daily-must-list', tasks.must, 'must');
+            renderList('daily-main-list', tasks.main, 'main');
+            renderList('daily-fun-list', tasks.fun, 'fun');
+            renderList('daily-bonus-list', tasks.bonus, 'bonus');
+        }
+
+        function renderList(containerId, listData, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            listData.forEach(task => {
+                const card = document.createElement('div');
+                card.className = `task-card ${task.done ? 'done' : ''} ${type === 'fun' ? 'fun' : ''}`;
+                card.id = 'card-' + task.id;
+                card.onclick = () => toggleTask(type, task.id);
+                const checkIcon = task.done ? ' <span style="color:#34C759">✔</span>' : '';
+                card.innerHTML = `
+                    <div class="task-flow">
+                        <span>🕒 ${task.time} · ${task.flow}</span>
+                        ${task.target ? `<span class="countdown" id="cd-${task.id}"></span>` : ''}
+                    </div>
+                    <div class="task-title">${task.title}${checkIcon}</div>
+                    <div class="task-bottom"><span class="min-tag">${type === 'fun' ? '🎉 尽情享受' : '🌱 底线：'+task.min}</span></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleTask(type, id) {
+            tasks[type] = tasks[type].map(t => t.id === id ? { ...t, done: !t.done } : t);
+            saveData(); renderAll();
+        }
+
+        // 定时提醒
+        let alertedTasks = new Set(); 
+        function startClock() {
+            setInterval(() => {
+                const now = new Date();
+                const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                let allTasks = [...tasks.must, ...tasks.main, ...tasks.fun, ...tasks.bonus];
+                allTasks.forEach(task => {
+                    if (task.target && !task.done && !alertedTasks.has(task.id)) {
+                        const cdEl = document.getElementById('cd-' + task.id);
+                        const targetParts = task.target.split(':');
+                        const targetDate = new Date();
+                        targetDate.setHours(parseInt(targetParts[0]), parseInt(targetParts[1]), 0, 0);
+                        let diffMins = Math.floor((targetDate - now) / 60000);
+                        if (cdEl) {
+                            if (diffMins > 0) { cdEl.innerText = `还有 ${diffMins} 分钟`; } 
+                            else if (diffMins > -30) { cdEl.innerText = `已到时间！`; }
+                        }
+                        if (currentTime === task.target) {
+                            if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+                            document.getElementById('cuteTaskName').innerText = task.title;
+                            document.getElementById('cuteTaskMin').innerText = `底线：${task.min}`;
+                            document.getElementById('cuteAlert').style.display = 'flex';
+                            alertedTasks.add(task.id); 
+                        }
+                    }
+                });
+            }, 10000); 
+        }
+
+        function closeCuteAlert() { document.getElementById('cuteAlert').style.display = 'none'; }
+
+        // 周报
+        function generateReport() {
+            let totalDone = 0, totalTasks = 0;
+            tasks.history.slice(-7).forEach(day => { totalDone += day.done; totalTasks += day.total; });
+            ['must', 'main', 'fun', 'bonus'].forEach(k => { totalTasks += tasks[k].length; totalDone += tasks[k].filter(t => t.done).length; });
+            
+            let percent = totalTasks === 0 ? 0 : Math.round((totalDone / totalTasks) * 100);
+            document.getElementById('report-score-text').innerText = percent + '%';
+            document.getElementById('report-done-num').innerText = totalDone;
+            document.getElementById('report-ring').style.setProperty('--percent', percent + '%');
+
+            const tipEl = document.getElementById('coach-tip');
+            if (percent >= 80) tipEl.innerHTML = `🌟 <strong>太棒了 Yiyi！</strong> 执行力极高！这周末放开了去玩吧，搞你的文游和vlog，这是你应得的！`;
+            else if (percent >= 50) tipEl.innerHTML = `🌱 <strong>稳步推进中！</strong> 如果觉得累，记得“每天只推一件主业”。及格线是用来保底的，别内耗。`;
+            else tipEl.innerHTML = `🍃 <strong>没关系的。</strong> “计划不是用来完成的，是用来失败之后重新开始的。” 下周砍掉加分项，只留【洗澡】和【23:30躺下】。`;
+        }
+
+        // 生理期（升级版）
+        function togglePeriodInput() {
+            const group = document.getElementById('date-input-group');
+            group.classList.toggle('active');
+            if (group.classList.contains('active')) {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('period-start').value = localStorage.getItem('periodStart') || today;
+                document.getElementById('period-end').value = localStorage.getItem('periodEnd') || today;
+            }
+        }
+
+        function savePeriodDates() {
+            const start = document.getElementById('period-start').value;
+            const end = document.getElementById('period-end').value;
+            if (!start) return alert("请选择开始日期");
+            
+            localStorage.setItem('periodStart', start);
+            localStorage.setItem('periodEnd', end);
+            document.getElementById('date-input-group').classList.remove('active');
+            updatePeriodStatus();
+            alert("日期已保存！");
+        }
+
+        function updatePeriodStatus() {
+            let startStr = localStorage.getItem('periodStart');
+            const today = new Date(); today.setHours(0,0,0,0);
+            if (!startStr) { document.getElementById('period-desc').innerText = "点击右侧按钮设置日期"; return; }
+            
+            const start = new Date(startStr);
+            const nextPeriod = new Date(start); nextPeriod.setDate(nextPeriod.getDate() + 28);
+            const diffDays = Math.ceil((nextPeriod - today) / (1000 * 60 * 60 * 24));
+            const desc = document.getElementById('period-desc');
+
+            if (diffDays < 0) { desc.innerText = `已推迟 ${Math.abs(diffDays)} 天，注意保暖！`; }
+            else if (diffDays === 0) { desc.innerText = `预计就是今天！准备好~`; }
+            else if (diffDays <= 3) {${ desc.innerText = `还有exp ${diffDays} 天，注意.保暖！`; }
+            else { desc.innerText = `amount距离下次大约还有 ${diffDays} 天`; }
+        }
+
+        // 钱包
+        let budgetData = JSON.parse(localStorage.getItem('wuyiBudget')) || null;
+
+        function renderWallet() {
+            if (!budgetData) {
+                document.getElementById('wallet-setup').style.display = 'block';
+                document.getElementById('wallet-main').style.display = 'none';
+                return;
+            }
+            document.getElementById('wallet-setup').style.display = 'none';
+            document.getElementById('wallet-main').style.display = 'block';
+
+            document.getElementById('total-display').innerText = `¥ ${budgetData.totalAvail}`;
+            document.getElementById('saved-display').innerText = `¥ ${budgetData.saved}`;
+
+            updateBar('food', budgetData.spent.food, budgetData.budgets.food);
+            updateBar('daily', budgetData.spent.daily, budgetData.budgets.daily);
+            updateBar('fun', budgetData.spent.fun, budgetData.budgets.fun);
+
+            const listEl = document.getElementById('expense-list');
+            listEl.innerHTML = budgetData.expenses.length === 0 ? '<div style="text-align:center; color:#ccc; font-size:12px;">还没有记过账哦</div>' : '';
+            budgetData.expenses.slice().reverse().forEach(exp => {
+                const div = document.createElement('div');
+                div.className = 'expense-item';
+                let catName = exp.cat === 'food' ? '🍚 饭' : (exp.cat === 'daily' ? '🧴 日用' : '🧋 娱乐');
+                div.innerHTML = `<span>${catName}</span><span>- ¥}</span>`;
+                listEl.appendChild(div);
+            });
+        }
+
+        function updateBar(cat, spent, budget) {
+            document.getElementById(cat + '-text').innerText = `${spent} / ${budget}`;
+            let percent = budget === 0 ? 0 : Math.min((spent / budget) * 100, 100);
+            const bar = document.getElementById(cat + '-bar');
+            bar.style.width = percent + '%';
+            if (percent >= 90) bar.style.background = '#FF6B6B'; 
+            else bar.style.background = cat === 'food' ? '#F6AE2D' : (cat === 'daily' ? '#4A90E2' : '#E86A58');
+        }
+
+        function distributeBudget() {
+            const income = parseInt(document.getElementById('incomeInput').value);
+            if (!income || income <= 0) return alert("请输入正确的金额");
+            
+            const saved = Math.round(income * 0.15);
+            const avail = income - saved;
+            
+            budgetData = {
+                income: income, saved: saved, totalAvail: avail,
+                budgets: { food: Math.round(avail * 0.65), daily: Math.round(avail * 0.23), fun: Math.round(avail * 0.12) },
+                spent: { food: 0, daily: 0, fun: 0 }, expenses: []
+            };
+            saveBudget(); renderWallet();
+            alert(`分配成功！已为你偷偷存下 ${saved} 元。`);
+        }
+
+        function addExpense() {
+            const amount = parseInt(document.getElementById('expenseAmount').value);
+            const cat = document.getElementById('expenseCategory').value;
+            if (!amount || amount <= 0) return alert("请输入金额");
+
+            budgetData.spent[cat] += amount;
+            budgetData.expenses.push({ amount: amount, cat: cat });
+            document.getElementById('expenseAmount').value = '';
+            
+            saveBudget(); renderWallet();
+            
+            if (budgetData.spent[cat] > budgetData.budgets[cat]) {
+                alert("⚠️ 注意！这项额度已经超支啦，接下来的日子要控制一下哦！");
+            }
+        }
+
+        function resetWallet() {
+            if (confirm("确定要清空本月账单吗？")) {
+                localStorage.removeItem('wuyiBudget'); budgetData = null; renderWallet();
+            }
+        }
+        function saveBudget() { localStorage.setItem('wuyiBudget', JSON.stringify(budgetData)); }
+
+        // 同步日历
+        function exportCalendar() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//WuYi//Time Manager//CN\nCALSCALE:GREGORIAN\n";
+            const today = new Date();
+            let allTasks = [...tasks.must, ...tasks.main, ...tasks.fun];
+            let eventCount = 0;
+
+            allTasks.forEach(task => {
+                if (task.target && task.target.includes(':')) {
+                    const [hours, minutes] = task.target.split(':');
+                    let start = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes), 0);
+                    let end = new Date(start.getTime() + 30 * 60000);
+                    
+                    const formatDate = (date) => {
+                        return date.getFullYear() + String(date.getMonth() + 1).padStart(2, '0') + String(date.getDate()).padStart(2, '0') + "T" + String(date.getHours()).padStart(2, '0') + String(date.getMinutes()).padStart(2, '0') + "00";
+                    };
+
+                    icsContent += "BEGIN:VEVENT\n";
+                    icsContent += "SUMMARY:🐱 Yiyi的计划：" + task.title + "\n";
+                    icsContent += "DESCRIPTION:底线是：" + task.min + "。进门先去洗澡！\n";
+                    icsContent += "DTSTART:" + formatDate(start) + "\n";
+                    icsContent += "DTEND:" + formatDate(end) + "\n";
+                    icsContent += "BEGIN:VALARM\nTRIGGER:-PT5M\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\n";
+                    icsContent += "END:VEVENT\n";
+                    eventCount++;
+                }
+            });
+            icsContent += "END:VCALENDAR\n";
+
+            if (eventCount === 0) return alert("今天没有设定时间的任务哦！");
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = 'Yiyis_World.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("下载成功！请在 iPhone 上用【日历】App 打开这个文件，就能同步震动了！");
+        }
+
+        // 语音输入
+        let recognition = null;
+        let isRecording = false;
+        function startVoiceInput() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { return alert("你的浏览器不支持语音输入哦，请直接打字吧！"); }
+
+            if (isRecording) { recognition.stop(); return; }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            const micBtn = document.getElementById('micBtn');
+            const inputField = document.getElementById('newTaskTitle');
+
+            recognition.onstart = function() {
+                isRecording = true; micBtn.classList.add('recording');
+                inputField.placeholder = "正在听...请说话";
+            };
+            recognition.onresult = function(event) {
+                inputField.value += event.results[0][0].transcript;
+            };
+            recognition.onend = function() {
+                isRecording = false; micBtn.classList.remove('recording');
+                inputField.placeholder = "任务名 (点右侧麦克风说话)";
+            };
+            recognition.start();
+        }
+
+        function openModal() { document.getElementById('taskModal').style.display = 'flex'; }
+        function closeModal() { 
+            document.getElementById('taskModal').style.display = 'none'; 
+            if(recognition && isRecording) recognition.stop();
+        }
+        function saveNewTask() {
+            const title = document.getElementById('newTaskTitle').value;
+            const min = document.getElementById('newTaskMin').value || "完成即可";
+            if (!title) return alert("你想做点什么呢？");
+            tasks.bonus.push({ id: Date.now().toString(), time: "自定义", flow: "加分项", title: title, min: min, target: "", done: false });
+            closeModal(); saveData(); renderAll();
+        }
+        function saveData() { 
+            localStorage.setItem('wuyiSchedule', JSON.stringify(tasks)); 
+            localStorage.setItem('wuyiHistory', JSON.stringify(tasks.history));
+        }
+        
+        init();
+    </script>
+</body>
+</html>
